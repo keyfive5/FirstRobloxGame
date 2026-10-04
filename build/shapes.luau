@@ -46,6 +46,27 @@ do
 	finish(u, "Dome")
 end
 
+-- Ring: flat annulus, 2 x 0.12 x 2 (used for sprinkler / planting radius markers).
+do
+	local outer = Instance.new("Part")
+	outer.Shape = Enum.PartType.Cylinder
+	outer.Anchored = true
+	outer.Size = Vector3.new(0.12, 2, 2)
+	outer.CFrame = CFrame.Angles(0, 0, math.pi / 2)
+	outer.Parent = work
+	local inner = Instance.new("Part")
+	inner.Shape = Enum.PartType.Cylinder
+	inner.Anchored = true
+	inner.Size = Vector3.new(0.5, 1.88, 1.88)
+	inner.CFrame = CFrame.Angles(0, 0, math.pi / 2)
+	inner.Parent = work
+	local u = outer:SubtractAsync({ inner }, Enum.CollisionFidelity.Box, Enum.RenderFidelity.Precise)
+	outer:Destroy()
+	inner:Destroy()
+	finish(u, "Ring")
+	u.Material = Enum.Material.Neon
+end
+
 shapes.Parent = assets
 work:Destroy()
 local out = {}

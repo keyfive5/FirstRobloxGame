@@ -134,11 +134,10 @@ local function build(kind: string)
 					end
 				end
 			end)
-			local productKey = (isSeed and "Seed_" or "Gear_") .. def.id
-			local pid = Products.devId(productKey)
-			if pid ~= 0 then
+			local tier = Products.tierProduct(def.rarity)
+			if tier and tier.id ~= 0 then
 				Theme.button({
-					Text = "R$ " .. tostring(def.robux or "?"),
+					Text = "R$ " .. tier.price,
 					Color = C.purple,
 					Size = UDim2.fromOffset(130, 32),
 					Position = UDim2.new(1, -10, 0, 52),
@@ -146,7 +145,7 @@ local function build(kind: string)
 					maxSize = 18,
 					Parent = row,
 					onClick = function()
-						MarketplaceService:PromptProductPurchase(player, pid)
+						Net.func("RequestItemPurchase"):InvokeServer(isSeed and "seed" or "gear", def.id)
 					end,
 				})
 			end

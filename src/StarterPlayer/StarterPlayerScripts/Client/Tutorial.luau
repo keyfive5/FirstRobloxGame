@@ -38,6 +38,7 @@ local function setStep(n: number)
 	if n == DONE then
 		Notify.big("YOU'RE A GEM GARDENER!", "Grow rarer gems, catch weather mutations, get rich!", Theme.C.gold)
 		Sounds.play("stinger")
+		task.delay(6, Tutorial.askFavorite)
 	else
 		Sounds.play("notify")
 	end
@@ -69,7 +70,7 @@ local function build()
 	banner = Theme.card({
 		Name = "Tutorial",
 		Size = UDim2.fromOffset(620, 54),
-		Position = UDim2.new(0.5, 0, 0, 160),
+		Position = UDim2.new(0.5, 0, 0, 196),
 		AnchorPoint = Vector2.new(0.5, 0),
 		Color = Color3.new(1, 1, 1),
 		Gradient = { Theme.C.green, Theme.darken(Theme.C.green, 0.45), 0 },
@@ -117,6 +118,18 @@ local function build()
 	arrow.Enabled = false
 	arrow.Parent = holder
 	Theme.text({ Text = "⬇", Size = UDim2.fromScale(1, 1), TextColor3 = Color3.fromRGB(255, 230, 90), strokeThickness = 3, Parent = arrow })
+end
+
+-- One-time "favorite this game" prompt (no reward attached).
+function Tutorial.askFavorite()
+	if game.PlaceId == 0 then
+		return
+	end
+	if Net.func("FavPrompted"):InvokeServer() then
+		pcall(function()
+			game:GetService("AvatarEditorService"):PromptSetFavorite(game.PlaceId, Enum.AvatarItemType.Asset, true)
+		end)
+	end
 end
 
 function Tutorial.start()

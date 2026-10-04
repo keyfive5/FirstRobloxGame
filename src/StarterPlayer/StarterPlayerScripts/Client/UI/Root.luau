@@ -174,8 +174,8 @@ function Root.window(props)
 	local holder = Theme.new("Frame", {
 		Name = props.name,
 		BackgroundTransparency = 1,
-		Size = UDim2.fromOffset(props.width or 760, props.height or 500),
-		Position = UDim2.fromScale(0.5, 0.52),
+		Size = UDim2.fromOffset(props.width or 760, math.min(props.height or 500, 480)),
+		Position = UDim2.fromScale(0.5, 0.5),
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		ZIndex = 10,
 		Parent = gui,

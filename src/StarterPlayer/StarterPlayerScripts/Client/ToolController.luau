@@ -137,7 +137,7 @@ local function setupPreview(tool: Tool)
 				d.CastShadow = false
 			end
 		end
-		m:ScaleTo(0.6)
+		m:ScaleTo(0.6 * (sp.size or 1))
 		m.Parent = workspace
 		ghost = m
 		ring = makeRing(sp.radius * 0.75, Color3.fromRGB(120, 255, 140))

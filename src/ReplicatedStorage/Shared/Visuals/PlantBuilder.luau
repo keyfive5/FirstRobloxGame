@@ -60,6 +60,7 @@ function Builder:part(size: Vector3, cf: CFrame, color: Color3, material: Enum.M
 	p.Material = material or Enum.Material.SmoothPlastic
 	p.TopSurface = Enum.SurfaceType.Smooth
 	p.BottomSurface = Enum.SurfaceType.Smooth
+	p.CastShadow = size.Magnitude > 1.8 -- small details skip shadows (perf)
 	quiet(p)
 	p.Parent = self.model
 	return p
@@ -477,7 +478,7 @@ function Styles.prismlotus(b, sp)
 	b:cyl(V(0, 0.3, 0), V(0, 1.15, 0), 0.22, Color3.fromRGB(255, 255, 255), Enum.Material.Neon)
 	for i = 1, sp.slots do
 		local d = ringDir(i, sp.slots, 0.31)
-		b:slot(CF(d * 1.55 + V(0, 0.95, 0)), "up")
+		b:slot(CF(d * 1.8 + V(0, 0.95, 0)), "up")
 	end
 end
 

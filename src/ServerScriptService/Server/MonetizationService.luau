@@ -68,19 +68,35 @@ local function grant(player: Player, product)
 		Sync.notify(player, "🔮 Luck Potion active! 2x Golden & Rainbow chance.", "good")
 	elseif kind == "weather" then
 		WeatherService.trigger(product.weather, player.DisplayName)
-	elseif kind == "seed" then
-		Economy.addSeed(player, product.item, 1)
-		local sp = Species.get(product.item)
-		Sync.notify(player, string.format("🌱 You got a %s Seed!", sp and sp.name or "?"), "good")
-		local stats = DataService.get(player).data.stats
-		if sp and sp.price > (stats.topPrice or 0) then
-			stats.topPrice = sp.price
-			Sync.set(player, "stats", stats)
+	elseif kind == "item" then
+		local data = DataService.get(player).data
+		local pending = data.pendingPurchase
+		local itemKind, itemId
+		if pending and pending.r == product.rarity then
+			itemKind, itemId = pending.k, pending.i
+		else
+			-- No recorded intent (shouldn't happen): fall back to a seed of that rarity.
+			for _, sp in ipairs(Species.List) do
+				if sp.rarity == product.rarity then
+					itemKind, itemId = "seed", sp.id
+					break
+				end
+			end
 		end
-	elseif kind == "gear" then
-		Economy.addGear(player, product.item, 1)
-		local g = Gear.get(product.item)
-		Sync.notify(player, string.format("%s You got a %s!", g and g.icon or "", g and g.name or "?"), "good")
+		data.pendingPurchase = nil
+		if itemKind == "gear" then
+			Economy.addGear(player, itemId, 1)
+			local g = Gear.get(itemId)
+			Sync.notify(player, string.format("%s You got a %s!", g and g.icon or "", g and g.name or "?"), "good")
+		else
+			Economy.addSeed(player, itemId, 1)
+			local sp = Species.get(itemId)
+			Sync.notify(player, string.format("🌱 You got a %s Seed!", sp and sp.name or "?"), "good")
+			if sp and sp.price > (data.stats.topPrice or 0) then
+				data.stats.topPrice = sp.price
+				Sync.set(player, "stats", data.stats)
+			end
+		end
 	else
 		return false
 	end
@@ -137,6 +153,25 @@ function MonetizationService.start()
 	DataService.Loaded:Connect(function(player)
 		loadPasses(player)
 	end)
+	-- Robux purchase of a specific seed/gear: remember what was clicked, then prompt
+	-- the matching rarity-tier product.
+	Net.func("RequestItemPurchase").OnServerInvoke = function(player, itemKind, itemId)
+		local profile = DataService.get(player)
+		if not profile or (itemKind ~= "seed" and itemKind ~= "gear") or type(itemId) ~= "string" then
+			return false
+		end
+		local def = itemKind == "seed" and Species.get(itemId) or Gear.get(itemId)
+		if not def or def.notSold then
+			return false
+		end
+		local tier = Products.tierProduct(def.rarity)
+		if not tier or tier.id == 0 then
+			return false
+		end
+		profile.data.pendingPurchase = { k = itemKind, i = itemId, r = def.rarity, t = os.time() }
+		MarketplaceService:PromptProductPurchase(player, tier.id)
+		return true
+	end
 	-- Client asks the server for the current coin-pack amounts (they scale with progress).
 	Net.func("CoinPackAmounts").OnServerInvoke = function(player)
 		local out = {}

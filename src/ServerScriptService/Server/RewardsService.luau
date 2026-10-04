@@ -163,10 +163,36 @@ function RewardsService.start()
 		end
 		return true
 	end
-	DataService.Loaded:Connect(function(player)
+	DataService.Loaded:Connect(function(player, profile)
 		sessionStart[player] = os.time()
 		player:SetAttribute("SessionStart", sessionStart[player])
+		-- Invite rewards: whoever invited this player gets a gift (once per friend).
+		local ok, join = pcall(player.GetJoinData, player)
+		local referrerId = ok and join and join.ReferredByPlayerId
+		if referrerId and referrerId ~= 0 and referrerId ~= player.UserId then
+			local referrer = Players:GetPlayerByUserId(referrerId)
+			local rp = referrer and DataService.get(referrer)
+			if rp then
+				rp.data.referrals = rp.data.referrals or {}
+				if not rp.data.referrals[tostring(player.UserId)] then
+					rp.data.referrals[tostring(player.UserId)] = true
+					give(referrer, { coinsMult = 10, min = 2000, gear = { sprinkler = 1 } }, "👥 " .. player.DisplayName .. " joined from your invite! ")
+				end
+			end
+			if not profile.data.referredBy then
+				profile.data.referredBy = referrerId
+				give(player, { coins = 250, seeds = { amber = 2 } }, "👋 Welcome gift for joining a friend: ")
+			end
+		end
 	end)
+	Net.func("FavPrompted").OnServerInvoke = function(player)
+		local profile = DataService.get(player)
+		if profile and not profile.data.favPrompted then
+			profile.data.favPrompted = true
+			return true -- client may show the favorite prompt once
+		end
+		return false
+	end
 	-- Bank session playtime right before the final save.
 	DataService.Releasing:Connect(function(player, profile)
 		if sessionStart[player] then

@@ -147,7 +147,7 @@ function StorePanel.start()
 		local p = Products.DevByKey["Weather_" .. w.id]
 		if p and p.id ~= 0 then
 			local c = card(weather, i, w.icon, w.name, w.blurb .. " (whole server!)", w.color)
-			priceButton(c, w.robux, function()
+			priceButton(c, p.price, function()
 				MarketplaceService:PromptProductPurchase(player, p.id)
 			end)
 		end

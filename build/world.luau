@@ -741,7 +741,7 @@ for i = 1, Config.MaxPlots do
 	end
 
 	-- spawn point just inside the gate, facing into the garden
-	local sp = part(plot, { Name = "SpawnPoint", Size = V(2, 1, 2), CFrame = at(0, 3.5, -hz + 4) * CFrame.Angles(0, rad(180), 0), Transparency = 1, CanCollide = false, CanQuery = false, CanTouch = false })
+	local sp = part(plot, { Name = "SpawnPoint", Size = V(2, 1, 2), CFrame = at(0, 3.5, -hz + 10) * CFrame.Angles(0, rad(180), 0), Transparency = 1, CanCollide = false, CanQuery = false, CanTouch = false })
 	local _ = sp
 
 	-- path from the hub to the gate

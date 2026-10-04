@@ -30,7 +30,8 @@ renderFolder.Parent = workspace
 
 local harvestEvent = Net.event("Harvest")
 local SPARKLE = "rbxasset://textures/particles/sparkles_main.dds"
-local PARTICLE_RANGE = 90
+local PARTICLE_RANGE = 60
+local HIDE_RANGE, SHOW_RANGE = 235, 215 -- far gardens are hidden entirely
 
 local ripeEvent = Instance.new("BindableEvent")
 GardenRenderer.Ripened = ripeEvent.Event -- (record) own plants only
@@ -151,30 +152,30 @@ local function updateFruit(rec, slot: number, f, t: number, alpha: number, near:
 			f.prompt = nil
 		end
 	end
-	local s = (0.28 + 0.72 * ripeness) * (f.w or 1) * sp.gemSize
+	local s = (0.28 + 0.72 * ripeness) * (f.w or 1) * sp.gemSize * rec.base
 	if math.abs(s - f.scale) > 0.015 or rec.scaleChanged then
 		f.scale = s
 		f.part.Size = f.base * s
 		local cf = slotDef.cf
-		if rec.scale ~= 1 then
-			cf = cf - cf.Position + cf.Position * rec.scale
-		end
+		cf = cf - cf.Position + cf.Position * rec.scale
 		f.part.CFrame = rec.baseCF * PlantBuilder.gemCFrame({ cf = cf, mode = slotDef.mode }, f.part.Size, f.spin)
 	end
 	if ripe and not f.ripeShown then
 		f.ripeShown = true
-		local e = Instance.new("ParticleEmitter")
+		local e = rec.mine and Instance.new("ParticleEmitter") or Instance.new("Folder")
 		e.Name = "Ripe"
-		e.Texture = SPARKLE
-		e.Rate = 2.5
-		e.Lifetime = NumberRange.new(0.6, 1)
-		e.Speed = NumberRange.new(0.3, 0.8)
-		e.SpreadAngle = Vector2.new(180, 180)
-		e.LightEmission = 1
-		e.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(1, 0) })
-		e.Color = ColorSequence.new(Color3.new(1, 1, 1))
+		if e:IsA("ParticleEmitter") then
+			e.Texture = SPARKLE
+			e.Rate = 2.5
+			e.Lifetime = NumberRange.new(0.6, 1)
+			e.Speed = NumberRange.new(0.3, 0.8)
+			e.SpreadAngle = Vector2.new(180, 180)
+			e.LightEmission = 1
+			e.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(1, 0) })
+			e.Color = ColorSequence.new(Color3.new(1, 1, 1))
+		end
 		e.Parent = f.part
-		if sp.glow and not f.part:FindFirstChildOfClass("PointLight") then
+		if sp.glow and rec.mine and not f.part:FindFirstChildOfClass("PointLight") then
 			local l = Instance.new("PointLight")
 			l.Color = sp.gemColor
 			l.Range = 6
@@ -266,6 +267,7 @@ local function addPlant(folder: Folder, plotIndex: number)
 		pos = baseCF.Position,
 		seed = seed,
 		gemFolder = gemFolder,
+		base = sp.size or 1,
 		scale = 1,
 		fruits = {},
 		mine = plotIndex == myPlot(),
@@ -274,8 +276,8 @@ local function addPlant(folder: Folder, plotIndex: number)
 	}
 	-- start tiny so it visibly grows
 	local alpha = math.clamp((now() - rec.T) / math.max(rec.G, 0.01), 0, 1)
-	if alpha < 1 then
-		rec.scale = 0.22 + 0.78 * (1 - (1 - alpha) ^ 2)
+	rec.scale = rec.base * (alpha >= 1 and 1 or (0.22 + 0.78 * (1 - (1 - alpha) ^ 2)))
+	if rec.scale ~= 1 then
 		model:ScaleTo(rec.scale)
 	end
 	rec.wasGrown = alpha >= 1
@@ -332,10 +334,25 @@ local function removePlant(folder: Folder)
 end
 
 local function updatePlant(rec, t: number, camPos: Vector3)
+	local dist = (rec.pos - camPos).Magnitude
+	if rec.hidden then
+		if dist < SHOW_RANGE or rec.mine then
+			rec.hidden = false
+			rec.model.Parent = renderFolder
+			rec.gemFolder.Parent = renderFolder
+		else
+			return
+		end
+	elseif dist > HIDE_RANGE and not rec.mine then
+		rec.hidden = true
+		rec.model.Parent = nil
+		rec.gemFolder.Parent = nil
+		return
+	end
 	local alpha = math.clamp((t - (rec.T or 0)) / math.max(rec.G or 1, 0.01), 0, 1)
 	rec.scaleChanged = false
-	local target = alpha >= 1 and 1 or (0.22 + 0.78 * (1 - (1 - alpha) ^ 2))
-	if math.abs(target - rec.scale) > 0.012 or (target == 1 and rec.scale ~= 1) then
+	local target = rec.base * (alpha >= 1 and 1 or (0.22 + 0.78 * (1 - (1 - alpha) ^ 2)))
+	if math.abs(target - rec.scale) > 0.012 or (alpha >= 1 and rec.scale ~= rec.base) then
 		rec.scale = target
 		rec.model:ScaleTo(target)
 		rec.scaleChanged = true
@@ -346,7 +363,7 @@ local function updatePlant(rec, t: number, camPos: Vector3)
 			Sounds.play("pop", 1.3)
 		end
 	end
-	local near = (rec.pos - camPos).Magnitude < PARTICLE_RANGE
+	local near = dist < PARTICLE_RANGE
 	for i, f in pairs(rec.fruits) do
 		updateFruit(rec, i, f, t, alpha, near)
 	end
@@ -379,7 +396,13 @@ local function addSprinkler(folder: Folder, plotIndex: number)
 	p({ Shape = Enum.PartType.Cylinder, Size = Vector3.new(0.4, 1.6, 1.6), CFrame = cf * CFrame.new(0, 0.2, 0) * CFrame.Angles(0, 0, math.pi / 2), Color = Color3.fromRGB(90, 90, 100), Material = Enum.Material.Metal })
 	p({ Shape = Enum.PartType.Cylinder, Size = Vector3.new(1.6, 0.3, 0.3), CFrame = cf * CFrame.new(0, 1.1, 0) * CFrame.Angles(0, 0, math.pi / 2), Color = Color3.fromRGB(140, 140, 150), Material = Enum.Material.Metal })
 	local head = p({ Shape = Enum.PartType.Ball, Size = Vector3.new(0.8, 0.8, 0.8), CFrame = cf * CFrame.new(0, 2.0, 0), Color = g.color or Color3.new(1, 1, 1), Material = Enum.Material.Neon })
-	local ring = p({ Shape = Enum.PartType.Cylinder, Size = Vector3.new(0.05, g.radius * 2, g.radius * 2), CFrame = cf * CFrame.new(0, 0.06, 0) * CFrame.Angles(0, 0, math.pi / 2), Color = g.color or Color3.fromRGB(150, 200, 255), Material = Enum.Material.Neon, Transparency = 0.82 })
+	local ring = ReplicatedStorage.Assets.Shapes.Ring:Clone()
+	ring.Size = Vector3.new(0.12, g.radius * 2, g.radius * 2) -- thin axis is local X (like a cylinder)
+	ring.CFrame = cf * CFrame.new(0, 0.08, 0) * CFrame.Angles(0, 0, math.pi / 2)
+	ring.Color = g.color or Color3.fromRGB(150, 200, 255)
+	ring.Transparency = 0.35
+	ring.Parent = m
+	p({ Shape = Enum.PartType.Cylinder, Size = Vector3.new(0.04, g.radius * 2, g.radius * 2), CFrame = cf * CFrame.new(0, 0.05, 0) * CFrame.Angles(0, 0, math.pi / 2), Color = g.color or Color3.fromRGB(150, 200, 255), Material = Enum.Material.Neon, Transparency = 0.93 })
 	local spray = Instance.new("ParticleEmitter")
 	spray.Texture = SPARKLE
 	spray.Color = ColorSequence.new(g.id == "lucky_lantern" and Color3.fromRGB(255, 120, 120) or Color3.fromRGB(170, 220, 255))

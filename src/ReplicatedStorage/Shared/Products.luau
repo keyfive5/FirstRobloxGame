@@ -20,32 +20,22 @@ Products.Dev = {
 	{ key = "Restock", id = 0, price = 29, icon = "🔄", name = "Restock Shops", kind = "restock" },
 	{ key = "GrowAll", id = 0, price = 79, icon = "⏩", name = "Grow Everything", kind = "growall" },
 	{ key = "LuckPotion", id = 0, price = 49, icon = "🔮", name = "Luck Potion (30 min)", kind = "boost", boost = "luck", seconds = 1800 },
-	{ key = "Weather_glimmer_rain", id = 0, kind = "weather", weather = "glimmer_rain" },
-	{ key = "Weather_blizzard", id = 0, kind = "weather", weather = "blizzard" },
-	{ key = "Weather_heatwave", id = 0, kind = "weather", weather = "heatwave" },
-	{ key = "Weather_thunderstorm", id = 0, kind = "weather", weather = "thunderstorm" },
-	{ key = "Weather_meteor_shower", id = 0, kind = "weather", weather = "meteor_shower" },
-	{ key = "Weather_aurora", id = 0, kind = "weather", weather = "aurora" },
-	-- One product per seed / gear so a receipt always knows exactly what to grant.
-	{ key = "Seed_quartz", id = 0, kind = "seed", item = "quartz" },
-	{ key = "Seed_amber", id = 0, kind = "seed", item = "amber" },
-	{ key = "Seed_rosequartz", id = 0, kind = "seed", item = "rosequartz" },
-	{ key = "Seed_amethyst", id = 0, kind = "seed", item = "amethyst" },
-	{ key = "Seed_topaz", id = 0, kind = "seed", item = "topaz" },
-	{ key = "Seed_ruby", id = 0, kind = "seed", item = "ruby" },
-	{ key = "Seed_sapphire", id = 0, kind = "seed", item = "sapphire" },
-	{ key = "Seed_citrine", id = 0, kind = "seed", item = "citrine" },
-	{ key = "Seed_emerald", id = 0, kind = "seed", item = "emerald" },
-	{ key = "Seed_jade", id = 0, kind = "seed", item = "jade" },
-	{ key = "Seed_opal", id = 0, kind = "seed", item = "opal" },
-	{ key = "Seed_moonstone", id = 0, kind = "seed", item = "moonstone" },
-	{ key = "Seed_diamond", id = 0, kind = "seed", item = "diamond" },
-	{ key = "Seed_sunstone", id = 0, kind = "seed", item = "sunstone" },
-	{ key = "Seed_prism", id = 0, kind = "seed", item = "prism" },
-	{ key = "Gear_watering_can", id = 0, kind = "gear", item = "watering_can" },
-	{ key = "Gear_sprinkler", id = 0, kind = "gear", item = "sprinkler" },
-	{ key = "Gear_golden_sprinkler", id = 0, kind = "gear", item = "golden_sprinkler" },
-	{ key = "Gear_lucky_lantern", id = 0, kind = "gear", item = "lucky_lantern" },
+	{ key = "Weather_glimmer_rain", id = 0, kind = "weather", weather = "glimmer_rain", price = 49 },
+	{ key = "Weather_blizzard", id = 0, kind = "weather", weather = "blizzard", price = 79 },
+	{ key = "Weather_heatwave", id = 0, kind = "weather", weather = "heatwave", price = 99 },
+	{ key = "Weather_thunderstorm", id = 0, kind = "weather", weather = "thunderstorm", price = 129 },
+	{ key = "Weather_meteor_shower", id = 0, kind = "weather", weather = "meteor_shower", price = 249 },
+	{ key = "Weather_aurora", id = 0, kind = "weather", weather = "aurora", price = 399 },
+	-- Seeds & gear are bought with one product per rarity tier. The server records
+	-- which item the player clicked (pendingPurchase) before prompting.
+	{ key = "Tier_Common", id = 0, kind = "item", rarity = "Common", price = 15 },
+	{ key = "Tier_Uncommon", id = 0, kind = "item", rarity = "Uncommon", price = 29 },
+	{ key = "Tier_Rare", id = 0, kind = "item", rarity = "Rare", price = 59 },
+	{ key = "Tier_Epic", id = 0, kind = "item", rarity = "Epic", price = 99 },
+	{ key = "Tier_Legendary", id = 0, kind = "item", rarity = "Legendary", price = 199 },
+	{ key = "Tier_Mythic", id = 0, kind = "item", rarity = "Mythic", price = 349 },
+	{ key = "Tier_Divine", id = 0, kind = "item", rarity = "Divine", price = 499 },
+	{ key = "Tier_Prismatic", id = 0, kind = "item", rarity = "Prismatic", price = 799 },
 }
 
 Products.PassByKey = {}
@@ -74,6 +64,10 @@ end
 -- Coin packs scale with the most expensive seed the player has bought.
 function Products.coinAmount(product, topPrice: number): number
 	return math.max(product.min or 0, math.floor((topPrice or 10) * (product.mult or 1)))
+end
+
+function Products.tierProduct(rarity: string)
+	return Products.DevByKey["Tier_" .. rarity]
 end
 
 function Products.passId(key: string): number

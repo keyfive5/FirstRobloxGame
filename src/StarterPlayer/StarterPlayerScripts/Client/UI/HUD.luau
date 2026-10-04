@@ -219,6 +219,15 @@ local function sideButton(parent, order: number, icon: string, label: string, co
 	return b
 end
 
+-- Opens Roblox's invite sheet. Friends who join through it reward the inviter.
+function HUD.invite()
+	local SocialService = game:GetService("SocialService")
+	local ok, can = pcall(SocialService.CanSendGameInviteAsync, SocialService, player)
+	if ok and can then
+		pcall(SocialService.PromptGameInvite, SocialService, player)
+	end
+end
+
 function HUD.setBadge(label: string, text: string?)
 	local b = badges[label]
 	if b then
@@ -228,12 +237,13 @@ function HUD.setBadge(label: string, text: string?)
 end
 
 local function buildSide()
+	-- Desktop: bottom-left (chat lives top-left). Mobile: mid-left (thumbstick lives bottom-left).
 	local side = new("Frame", {
 		Name = "Side",
 		BackgroundTransparency = 1,
-		Size = UDim2.fromOffset(170, 420),
-		Position = UDim2.new(0, 12, 0.5, 0),
-		AnchorPoint = Vector2.new(0, 0.5),
+		Size = UDim2.fromOffset(168, 336),
+		Position = Root.isMobile and UDim2.new(0, 12, 0.42, 0) or UDim2.new(0, 12, 1, -16),
+		AnchorPoint = Root.isMobile and Vector2.new(0, 0.5) or Vector2.new(0, 1),
 		Parent = Root.gui,
 	})
 	Root.scaled(side)
@@ -262,6 +272,9 @@ local function buildSide()
 	sideButton(side, 6, "⚙️", "Settings", C.grey, function()
 		Root.toggle("settings")
 	end)
+	sideButton(side, 7, "👥", "Invite", C.green, function()
+		HUD.invite()
+	end)
 
 	local function updateBag(bag)
 		local cap = Config.BaseBagCapacity + (player:GetAttribute("Pass_BigBag") and Config.BigBagBonus or 0)
@@ -285,11 +298,11 @@ local function buildBoosts()
 	local row = new("Frame", {
 		Name = "Boosts",
 		BackgroundTransparency = 1,
-		Size = UDim2.fromOffset(170, 120),
-		Position = UDim2.new(0, 12, 0.5, 230),
-		AnchorPoint = Vector2.new(0, 0),
+		Size = UDim2.fromOffset(560, 28),
+		Position = UDim2.new(0.5, 0, 0, 160),
+		AnchorPoint = Vector2.new(0.5, 0),
 		Parent = Root.gui,
-	}, { Theme.list(Enum.FillDirection.Vertical, 6, Enum.HorizontalAlignment.Left) })
+	}, { Theme.list(Enum.FillDirection.Horizontal, 6, Enum.HorizontalAlignment.Center) })
 	Root.scaled(row)
 	local labels = {}
 	local function chip(key: string, color: Color3)
