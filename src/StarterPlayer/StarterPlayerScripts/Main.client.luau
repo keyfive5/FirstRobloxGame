@@ -19,6 +19,7 @@ local modules = {
 	Client.Interactions,
 	Client.Tutorial,
 	Client.ChatTags,
+	Client.Ads,
 }
 for _, m in ipairs(modules) do
 	task.spawn(function()

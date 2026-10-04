@@ -314,6 +314,26 @@ local function buildBoosts()
 	chip("luck", C.green)
 	chip("friends", C.blue)
 	chip("sell", C.gold)
+	-- Free boost offer via opt-in rewarded ad
+	local Ads = require(script.Parent.Parent.Ads)
+	local adChip = Theme.button({ Text = "📺 Free Luck Boost!", Color = C.purple, Size = UDim2.fromOffset(190, 30), Radius = 15, maxSize = 16, Parent = row })
+	adChip.Visible = false
+	adChip.Activated:Connect(function()
+		adChip.Visible = false
+		Ads.watch()
+	end)
+	task.spawn(function()
+		task.wait(90)
+		while true do
+			local luckEnds = State.data.boosts and State.data.boosts.luck or 0
+			if luckEnds < os.time() and Ads.enabled() then
+				adChip.Visible = Ads.available()
+			else
+				adChip.Visible = false
+			end
+			task.wait(300)
+		end
+	end)
 	task.spawn(function()
 		while true do
 			local now = os.time()

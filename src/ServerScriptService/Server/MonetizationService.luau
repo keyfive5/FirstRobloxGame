@@ -65,7 +65,7 @@ local function grant(player: Player, product)
 		local cur = profile.data.boosts[product.boost] or 0
 		profile.data.boosts[product.boost] = math.max(cur, t) + product.seconds
 		Sync.set(player, "boosts", profile.data.boosts)
-		Sync.notify(player, "🔮 Luck Potion active! 2x Golden & Rainbow chance.", "good")
+		Sync.notify(player, string.format("🍀 2x Golden & Rainbow luck for %d more minutes!", math.floor((profile.data.boosts[product.boost] - t) / 60)), "good")
 	elseif kind == "weather" then
 		WeatherService.trigger(product.weather, player.DisplayName)
 	elseif kind == "item" then
@@ -153,6 +153,33 @@ function MonetizationService.start()
 	DataService.Loaded:Connect(function(player)
 		loadPasses(player)
 	end)
+	-- Rewarded video ads: the player opts in, watches a short ad, and Roblox grants
+	-- the AdLuck developer product through ProcessReceipt (AdReward channel).
+	local AdService = game:GetService("AdService")
+	local lastAd = {}
+	Net.event("WatchAd").OnServerEvent:Connect(function(player)
+		local product = Products.DevByKey.AdLuck
+		if not product or product.id == 0 then
+			return
+		end
+		if lastAd[player] and os.clock() - lastAd[player] < 30 then
+			return
+		end
+		lastAd[player] = os.clock()
+		task.spawn(function()
+			local ok, err = pcall(function()
+				local reward = AdService:CreateAdRewardFromDevProductId(product.id)
+				AdService:ShowRewardedVideoAdAsync(player, reward)
+			end)
+			if not ok then
+				warn("[Ads]", err)
+			end
+		end)
+	end)
+	Players.PlayerRemoving:Connect(function(player)
+		lastAd[player] = nil
+	end)
+
 	-- Robux purchase of a specific seed/gear: remember what was clicked, then prompt
 	-- the matching rarity-tier product.
 	Net.func("RequestItemPurchase").OnServerInvoke = function(player, itemKind, itemId)

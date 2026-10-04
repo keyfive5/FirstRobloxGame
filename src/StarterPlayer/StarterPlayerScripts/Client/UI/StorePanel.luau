@@ -9,6 +9,7 @@ local Weather = require(Shared.Weather)
 local Format = require(Shared.Util.Format)
 local Net = require(Shared.Net)
 
+local Ads = require(script.Parent.Parent.Ads)
 local Theme = require(script.Parent.Theme)
 local Root = require(script.Parent.Root)
 local Sounds = require(script.Parent.Parent.Sounds)
@@ -131,6 +132,23 @@ function StorePanel.start()
 		GrowAll = "Every plant in your garden finishes growing - right now!",
 		LuckPotion = "2x Golden & Rainbow gem chance for 30 minutes.",
 	}
+	-- Opt-in rewarded ad card (only shown when Roblox has an ad ready for this player).
+	local adCard = card(boosts, 0, "📺", "Free Lucky Boost", "Watch a short ad to get 2x Golden & Rainbow luck for 10 minutes. Totally optional!", C.green)
+	adCard.Visible = false
+	Theme.button({
+		Text = "WATCH AD",
+		Color = C.green,
+		Size = UDim2.new(1, -24, 0, 42),
+		Position = UDim2.new(0.5, 0, 1, -10),
+		AnchorPoint = Vector2.new(0.5, 1),
+		Font = Theme.TitleFont,
+		maxSize = 22,
+		Parent = adCard,
+		onClick = function()
+			adCard.Visible = false
+			Ads.watch()
+		end,
+	})
 	for i, key in ipairs({ "GrowAll", "LuckPotion", "Restock" }) do
 		local p = Products.DevByKey[key]
 		if p and p.id ~= 0 then
@@ -171,6 +189,9 @@ function StorePanel.start()
 			return
 		end
 		refreshPasses()
+		task.spawn(function()
+			adCard.Visible = Ads.available()
+		end)
 		task.spawn(function()
 			local amounts = Net.func("CoinPackAmounts"):InvokeServer()
 			for key, lbl in pairs(coinLabels) do

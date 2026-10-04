@@ -88,31 +88,61 @@ rainSound.Volume = 0
 rainSound.SoundGroup = SoundService:FindFirstChild("SFX")
 rainSound.Parent = SoundService
 
-local auroraParts = {}
+-- Aurora: soft curving Beam ribbons anchored high above the camera.
+local auroraAnchor = nil
 local function clearAurora()
-	for _, p in ipairs(auroraParts) do
-		p:Destroy()
+	if auroraAnchor then
+		auroraAnchor:Destroy()
+		auroraAnchor = nil
 	end
-	auroraParts = {}
 end
 
 local function makeAurora()
 	clearAurora()
-	for i = 1, 7 do
-		local p = Instance.new("Part")
-		p.Anchored = true
-		p.CanCollide = false
-		p.CanQuery = false
-		p.CanTouch = false
-		p.Material = Enum.Material.Neon
-		p.Size = Vector3.new(260, 70, 1)
-		p.Transparency = 0.75
-		p.Color = Color3.fromHSV(0.42 + i * 0.05, 0.8, 1)
-		p.CastShadow = false
-		p:SetAttribute("i", i)
-		p.Parent = workspace
-		table.insert(auroraParts, p)
+	local anchor = Instance.new("Part")
+	anchor.Name = "AuroraAnchor"
+	anchor.Anchored = true
+	anchor.CanCollide = false
+	anchor.CanQuery = false
+	anchor.CanTouch = false
+	anchor.Transparency = 1
+	anchor.Size = Vector3.one
+	anchor.Parent = workspace
+	for i = 1, 10 do
+		local a0 = Instance.new("Attachment")
+		a0.Position = Vector3.new(-300 + i * 8, 100 + (i % 3) * 18, i * 10)
+		a0.Orientation = Vector3.new(0, 0, 90)
+		a0.Parent = anchor
+		local a1 = Instance.new("Attachment")
+		a1.Position = Vector3.new(300 - i * 8, 100 + ((i + 1) % 3) * 18, -30 + i * 8)
+		a1.Orientation = Vector3.new(0, 0, 90)
+		a1.Parent = anchor
+		local b = Instance.new("Beam")
+		b.Attachment0 = a0
+		b.Attachment1 = a1
+		b.Width0 = 45
+		b.Width1 = 45
+		b.Segments = 60
+		b.CurveSize0 = 90 + (i % 4) * 25
+		b.CurveSize1 = -(60 + (i % 3) * 30)
+		b.FaceCamera = false
+		b.LightEmission = 1
+		b.LightInfluence = 0
+		b.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 255, 170)),
+			ColorSequenceKeypoint.new(0.5, Color3.fromRGB(90, 230, 255)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 120, 255)),
+		})
+		b.Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 1),
+			NumberSequenceKeypoint.new(0.25, 0.72),
+			NumberSequenceKeypoint.new(0.75, 0.75),
+			NumberSequenceKeypoint.new(1, 1),
+		})
+		b:SetAttribute("Curve0", b.CurveSize0)
+		b.Parent = anchor
 	end
+	auroraAnchor = anchor
 end
 
 local function setParticles(id: string?)
@@ -356,12 +386,13 @@ function WeatherFX.start()
 		end
 		local cpos = cam.CFrame.Position
 		box.CFrame = CFrame.new(cpos.X, cpos.Y + 45, cpos.Z) + cam.CFrame.LookVector * Vector3.new(30, 0, 30)
-		if #auroraParts > 0 then
+		if auroraAnchor then
 			local t = os.clock()
-			for _, p in ipairs(auroraParts) do
-				local i = p:GetAttribute("i")
-				p.CFrame = CFrame.new(cpos.X + math.sin(t * 0.2 + i) * 30, 170 + i * 6, cpos.Z - 160 + i * 18) * CFrame.Angles(0.3 + math.sin(t * 0.5 + i) * 0.15, math.sin(t * 0.1 + i) * 0.3, 0)
-				p.Transparency = 0.7 + math.sin(t * 0.8 + i * 1.3) * 0.1
+			auroraAnchor.CFrame = CFrame.new(cpos.X, 0, cpos.Z - 140)
+			for i, b in ipairs(auroraAnchor:GetChildren()) do
+				if b:IsA("Beam") then
+					b.CurveSize0 = b:GetAttribute("Curve0") + math.sin(t * 0.4 + i) * 25
+				end
 			end
 		end
 		-- background thunder flashes / shooting stars

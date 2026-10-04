@@ -19,6 +19,7 @@ Products.Dev = {
 	{ key = "Coins4", id = 3716404491, price = 1499, icon = "👑", name = "Vault of Coins", kind = "coins", mult = 280, min = 35000 },
 	{ key = "Restock", id = 3716404498, price = 29, icon = "🔄", name = "Restock Shops", kind = "restock" },
 	{ key = "GrowAll", id = 3716404506, price = 79, icon = "⏩", name = "Grow Everything", kind = "growall" },
+	{ key = "AdLuck", id = 3716515923, price = 19, icon = "🍀", name = "Lucky Boost (10 min)", kind = "boost", boost = "luck", seconds = 600, ad = true },
 	{ key = "LuckPotion", id = 3716404515, price = 49, icon = "🔮", name = "Luck Potion (30 min)", kind = "boost", boost = "luck", seconds = 1800 },
 	{ key = "Weather_glimmer_rain", id = 3716404519, kind = "weather", weather = "glimmer_rain", price = 49 },
 	{ key = "Weather_blizzard", id = 3716404525, kind = "weather", weather = "blizzard", price = 79 },
