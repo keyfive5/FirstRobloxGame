@@ -69,7 +69,7 @@ function StorePanel.start()
 			Theme.setButtonColor(b, n == name and C.pink or C.cardDark)
 		end
 	end
-	for i, t in ipairs({ { "passes", "⭐ Passes" }, { "coins", "$Coins" }, { "boosts", "⚡ Boosts" }, { "weather", "🌦️ Weather" } }) do
+	for i, t in ipairs({ { "passes", "⭐ Passes" }, { "coins", "💰 Coins" }, { "boosts", "⚡ Boosts" }, { "weather", "🌦️ Weather" } }) do
 		tabButtons[t[1]] = Theme.button({
 			Text = t[2],
 			Color = C.cardDark,
@@ -175,7 +175,7 @@ function StorePanel.start()
 			local amounts = Net.func("CoinPackAmounts"):InvokeServer()
 			for key, lbl in pairs(coinLabels) do
 				if lbl and amounts and amounts[key] then
-					lbl.Text = "$" .. Format.short(amounts[key]) .. " coins"
+					lbl.Text = "+$" .. Format.short(amounts[key]) .. " coins"
 					lbl.TextColor3 = C.gold
 				end
 			end

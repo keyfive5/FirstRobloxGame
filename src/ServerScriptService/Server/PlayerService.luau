@@ -22,6 +22,46 @@ local function toGarden(player: Player)
 	end
 end
 
+-- Golden overhead name for VIP pass owners.
+local function vipTag(player: Player)
+	local char = player.Character
+	local head = char and char:FindFirstChild("Head")
+	if not head then
+		return
+	end
+	local old = head:FindFirstChild("VIPTag")
+	if not player:GetAttribute("Pass_VIP") then
+		if old then
+			old:Destroy()
+		end
+		return
+	end
+	if old then
+		return
+	end
+	local bb = Instance.new("BillboardGui")
+	bb.Name = "VIPTag"
+	bb.Size = UDim2.fromOffset(200, 34)
+	bb.StudsOffset = Vector3.new(0, 2.6, 0)
+	bb.MaxDistance = 80
+	bb.LightInfluence = 0
+	local t = Instance.new("TextLabel")
+	t.BackgroundTransparency = 1
+	t.Size = UDim2.fromScale(1, 1)
+	t.Font = Enum.Font.FredokaOne
+	t.TextScaled = true
+	t.Text = "👑 " .. player.DisplayName
+	t.TextColor3 = Color3.fromRGB(255, 212, 70)
+	t.TextStrokeColor3 = Color3.fromRGB(90, 50, 0)
+	t.TextStrokeTransparency = 0
+	t.Parent = bb
+	bb.Parent = head
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if hum then
+		hum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+	end
+end
+
 local function linkFriends(player: Player)
 	for _, other in ipairs(Players:GetPlayers()) do
 		if other ~= player then
@@ -61,11 +101,16 @@ end
 function PlayerService.start()
 	DataService.Loaded:Connect(onLoaded)
 	local function hook(player: Player)
-		player.CharacterAdded:Connect(function()
+		player.CharacterAdded:Connect(function(char)
+			char:WaitForChild("Head", 5)
+			vipTag(player)
 			if GardenService.plotOf(player) then
 				task.wait(0.1)
 				toGarden(player)
 			end
+		end)
+		player:GetAttributeChangedSignal("Pass_VIP"):Connect(function()
+			vipTag(player)
 		end)
 	end
 	Players.PlayerAdded:Connect(hook)

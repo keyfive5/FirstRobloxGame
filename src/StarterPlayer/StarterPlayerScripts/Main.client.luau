@@ -18,6 +18,7 @@ local modules = {
 	Client.WeatherFX,
 	Client.Interactions,
 	Client.Tutorial,
+	Client.ChatTags,
 }
 for _, m in ipairs(modules) do
 	task.spawn(function()
