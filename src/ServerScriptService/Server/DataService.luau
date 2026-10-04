@@ -36,6 +36,7 @@ local function template()
 		stats = { earned = 0, harvested = 0, planted = 0, playtime = 0, bestValue = 0, bestGem = nil, topPrice = 10, sold = 0, joins = 0 },
 		discovered = {},
 		daily = { last = -1, streak = 0 },
+		quests = { day = -1, list = {}, bonus = false },
 		codes = {},
 		tutorial = 0,
 		receipts = {},

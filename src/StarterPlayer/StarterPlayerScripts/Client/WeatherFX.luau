@@ -42,8 +42,8 @@ local PRESETS = {
 	blizzard = { ClockTime = 13, Brightness = 2.2, OutdoorAmbient = Color3.fromRGB(170, 180, 205), atmDensity = 0.55, atmColor = Color3.fromRGB(235, 242, 255), atmHaze = 3, ccTint = Color3.fromRGB(225, 238, 255), ccSat = -0.05, cloudCover = 0.9, cloudDensity = 0.9, cloudColor = Color3.fromRGB(240, 245, 255) },
 	heatwave = { ClockTime = 15.5, Brightness = 3.2, OutdoorAmbient = Color3.fromRGB(170, 130, 110), atmDensity = 0.35, atmColor = Color3.fromRGB(255, 200, 150), atmHaze = 2.4, ccTint = Color3.fromRGB(255, 225, 195), ccSat = 0.2, cloudCover = 0.2, cloudDensity = 0.4, cloudColor = Color3.fromRGB(255, 220, 190) },
 	thunderstorm = { ClockTime = 16.6, Brightness = 1.4, OutdoorAmbient = Color3.fromRGB(108, 108, 138), atmDensity = 0.44, atmColor = Color3.fromRGB(130, 135, 160), atmHaze = 2.2, ccTint = Color3.fromRGB(210, 214, 240), ccSat = -0.05, cloudCover = 0.95, cloudDensity = 1, cloudColor = Color3.fromRGB(112, 114, 132) },
-	meteor_shower = { ClockTime = 20.6, Brightness = 1.4, OutdoorAmbient = Color3.fromRGB(110, 90, 150), atmDensity = 0.3, atmColor = Color3.fromRGB(150, 120, 200), atmHaze = 1.2, ccTint = Color3.fromRGB(235, 215, 255), ccSat = 0.15, cloudCover = 0.35, cloudDensity = 0.4, cloudColor = Color3.fromRGB(160, 140, 200) },
-	aurora = { ClockTime = 21.5, Brightness = 1.2, OutdoorAmbient = Color3.fromRGB(80, 140, 140), atmDensity = 0.26, atmColor = Color3.fromRGB(120, 200, 190), atmHaze = 1, ccTint = Color3.fromRGB(215, 255, 245), ccSat = 0.2, cloudCover = 0.15, cloudDensity = 0.3, cloudColor = Color3.fromRGB(150, 220, 210) },
+	meteor_shower = { ClockTime = 18.7, Brightness = 2.0, OutdoorAmbient = Color3.fromRGB(160, 140, 200), atmDensity = 0.3, atmColor = Color3.fromRGB(170, 140, 220), atmHaze = 1.2, ccTint = Color3.fromRGB(240, 220, 255), ccSat = 0.2, cloudCover = 0.35, cloudDensity = 0.4, cloudColor = Color3.fromRGB(200, 170, 230) },
+	aurora = { ClockTime = 20.4, Brightness = 1.8, OutdoorAmbient = Color3.fromRGB(130, 175, 175), atmDensity = 0.24, atmColor = Color3.fromRGB(120, 200, 190), atmHaze = 1, ccTint = Color3.fromRGB(220, 255, 245), ccSat = 0.25, cloudCover = 0.15, cloudDensity = 0.3, cloudColor = Color3.fromRGB(150, 220, 210) },
 }
 
 local function apply(target, time: number)
@@ -90,6 +90,7 @@ rainSound.Parent = SoundService
 
 -- Aurora: soft curving Beam ribbons anchored high above the camera.
 local auroraAnchor = nil
+local auroraDir = nil
 local function clearAurora()
 	if auroraAnchor then
 		auroraAnchor:Destroy()
@@ -108,23 +109,26 @@ local function makeAurora()
 	anchor.Transparency = 1
 	anchor.Size = Vector3.one
 	anchor.Parent = workspace
-	for i = 1, 10 do
+	-- Vertical curtains: each Beam runs left-right across the sky, its ribbon
+	-- width hangs vertically (attachment Y = up) and it waves in depth (X = away).
+	for i = 1, 8 do
+		local y = 72 + (i % 3) * 14
 		local a0 = Instance.new("Attachment")
-		a0.Position = Vector3.new(-300 + i * 8, 100 + (i % 3) * 18, i * 10)
-		a0.Orientation = Vector3.new(0, 0, 90)
+		a0.Position = Vector3.new(-330 + i * 10, y, -i * 14)
+		a0.Orientation = Vector3.new(0, 90, 0)
 		a0.Parent = anchor
 		local a1 = Instance.new("Attachment")
-		a1.Position = Vector3.new(300 - i * 8, 100 + ((i + 1) % 3) * 18, -30 + i * 8)
-		a1.Orientation = Vector3.new(0, 0, 90)
+		a1.Position = Vector3.new(330 - i * 10, y + 10, -i * 14 - 20)
+		a1.Orientation = Vector3.new(0, 90, 0)
 		a1.Parent = anchor
 		local b = Instance.new("Beam")
 		b.Attachment0 = a0
 		b.Attachment1 = a1
-		b.Width0 = 45
-		b.Width1 = 45
+		b.Width0 = 70 + (i % 3) * 12
+		b.Width1 = 60 + (i % 2) * 14
 		b.Segments = 60
-		b.CurveSize0 = 90 + (i % 4) * 25
-		b.CurveSize1 = -(60 + (i % 3) * 30)
+		b.CurveSize0 = 120 + (i % 4) * 30
+		b.CurveSize1 = 90 + (i % 3) * 30
 		b.FaceCamera = false
 		b.LightEmission = 1
 		b.LightInfluence = 0
@@ -135,8 +139,8 @@ local function makeAurora()
 		})
 		b.Transparency = NumberSequence.new({
 			NumberSequenceKeypoint.new(0, 1),
-			NumberSequenceKeypoint.new(0.25, 0.72),
-			NumberSequenceKeypoint.new(0.75, 0.75),
+			NumberSequenceKeypoint.new(0.2, 0.8),
+			NumberSequenceKeypoint.new(0.8, 0.82),
 			NumberSequenceKeypoint.new(1, 1),
 		})
 		b:SetAttribute("Curve0", b.CurveSize0)
@@ -388,10 +392,16 @@ function WeatherFX.start()
 		box.CFrame = CFrame.new(cpos.X, cpos.Y + 45, cpos.Z) + cam.CFrame.LookVector * Vector3.new(30, 0, 30)
 		if auroraAnchor then
 			local t = os.clock()
-			auroraAnchor.CFrame = CFrame.new(cpos.X, 0, cpos.Z - 140)
+			-- keep the curtain in front of the player, easing as they turn
+			local look = cam.CFrame.LookVector
+			local flat = Vector3.new(look.X, 0, look.Z)
+			flat = flat.Magnitude > 0.01 and flat.Unit or Vector3.new(0, 0, -1)
+			auroraDir = auroraDir and auroraDir:Lerp(flat, 0.02).Unit or flat
+			local base = Vector3.new(cpos.X, 0, cpos.Z) + auroraDir * 240
+			auroraAnchor.CFrame = CFrame.lookAt(base, base + auroraDir)
 			for i, b in ipairs(auroraAnchor:GetChildren()) do
 				if b:IsA("Beam") then
-					b.CurveSize0 = b:GetAttribute("Curve0") + math.sin(t * 0.4 + i) * 25
+					b.CurveSize0 = b:GetAttribute("Curve0") + math.sin(t * 0.4 + i) * 40
 				end
 			end
 		end

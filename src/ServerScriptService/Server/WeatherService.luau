@@ -57,6 +57,39 @@ function WeatherService.trigger(id: string, by: string?)
 	return true
 end
 
+-- Admin: switch weather right now (id = "clear" ends it).
+function WeatherService.force(id: string)
+	queue = {}
+	if id == "clear" then
+		if active then
+			active.endsAt = now()
+		end
+		return true
+	end
+	local def = Weather.get(id)
+	if not def then
+		return false
+	end
+	active = { def = def, endsAt = now() + def.duration, nextStrike = now() + 3 }
+	publish()
+	return true
+end
+
+-- Immediate strike (admin/live events): hits a plant if any have gems.
+function WeatherService.strikeNow(kind: string?)
+	local def = Weather.get(kind or "") or (active and active.def)
+	if not def or not def.strike then
+		def = Weather.get("thunderstorm")
+	end
+	local pos = GardenService.strike(def.mutation)
+	if not pos then
+		local a = rng:NextNumber() * math.pi * 2
+		pos = Vector3.new(math.cos(a) * 120, 0, math.sin(a) * 120)
+	end
+	strikeEvent:FireAllClients(def.id, pos)
+	return pos
+end
+
 local function stop()
 	active = nil
 	publish()

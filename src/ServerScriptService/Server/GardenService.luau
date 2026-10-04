@@ -33,6 +33,8 @@ local harvestedEvent = Instance.new("BindableEvent")
 GardenService.Harvested = harvestedEvent.Event -- (player, gem, value)
 local plantedEvent = Instance.new("BindableEvent")
 GardenService.Planted = plantedEvent.Event -- (player, speciesId)
+local gearEvent = Instance.new("BindableEvent")
+GardenService.GearUsed = gearEvent.Event -- (player, gearId)
 
 local function now(): number
 	return workspace:GetServerTimeNow()
@@ -479,6 +481,7 @@ function GardenService.water(player: Player, plantId: string)
 		end
 	end
 	publishPlant(plot, plantId, plant)
+	gearEvent:Fire(player, "watering_can")
 	return true
 end
 
@@ -512,6 +515,7 @@ function GardenService.placeSprinkler(player: Player, gearId: string, x: number,
 	garden.nextId += 1
 	table.insert(garden.sprinklers, s)
 	publishSprinkler(plot, s)
+	gearEvent:Fire(player, gearId)
 	return true
 end
 

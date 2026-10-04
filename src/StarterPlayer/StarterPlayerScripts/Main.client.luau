@@ -13,6 +13,7 @@ local modules = {
 	UI.BagPanel,
 	UI.StorePanel,
 	UI.MiscPanels,
+	UI.QuestPanel,
 	Client.GardenRenderer,
 	Client.ToolController,
 	Client.WeatherFX,

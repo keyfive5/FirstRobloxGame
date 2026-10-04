@@ -1,6 +1,6 @@
 -- Chat commands for the game owner (and anyone while testing in Studio).
 --   /coins 1000   /seed ruby 5   /gear sprinkler 2   /weather meteor_shower
---   /restock   /growall   /announce text   /sellboost 50 10  (percent, minutes)
+--   /setweather aurora|clear (instant)   /restock   /growall   /strike [meteor_shower]   /announce text   /sellboost 50 10  (percent, minutes)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -44,6 +44,12 @@ commands.gear = function(p, id, n)
 end
 commands.weather = function(p, id)
 	WeatherService.trigger(id or "glimmer_rain", p.DisplayName)
+end
+commands.setweather = function(_, id)
+	WeatherService.force(id or "clear")
+end
+commands.strike = function(_, kind)
+	WeatherService.strikeNow(kind)
 end
 commands.restock = function(p)
 	ShopService.reroll(p)

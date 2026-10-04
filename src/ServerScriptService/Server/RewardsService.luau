@@ -54,6 +54,8 @@ local function give(player: Player, spec, label: string)
 	Sync.notify(player, label .. table.concat(parts, ", "), "good")
 end
 
+RewardsService.give = give
+
 function RewardsService.dailyStatus(player: Player)
 	local profile = DataService.get(player)
 	if not profile then

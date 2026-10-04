@@ -7,7 +7,7 @@ local GardenService = require(Server.GardenService)
 
 GardenService.init()
 
-for _, name in ipairs({ "PlayerService", "ToolService", "ShopService", "SellService", "WeatherService", "MonetizationService", "RewardsService", "LeaderboardService", "AdminService" }) do
+for _, name in ipairs({ "PlayerService", "ToolService", "ShopService", "SellService", "WeatherService", "MonetizationService", "RewardsService", "QuestService", "LeaderboardService", "AdminService" }) do
 	local ok, err = pcall(function()
 		require(Server[name]).start()
 	end)
@@ -24,6 +24,13 @@ if game:GetService("RunService"):IsStudio() then
 	hook.Name = "DevHook"
 	hook.OnInvoke = function(service: string, method: string, ...)
 		local mod = require(Server[service])
+		if method == "__tempProfile" then -- filming/testing: stop saving this player's data
+			local profile = mod.get(...)
+			if profile then
+				profile.temporary = true
+			end
+			return profile ~= nil
+		end
 		if method == "__get" then
 			local field = ...
 			return mod[field]

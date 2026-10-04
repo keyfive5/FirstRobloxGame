@@ -8,7 +8,7 @@ local Sync = {}
 local stateEvent = Net.event("State")
 local notifyEvent = Net.event("Notify")
 
-local CLIENT_KEYS = { "coins", "seeds", "gear", "bag", "stats", "stock", "daily", "tutorial", "boosts", "settings", "discovered" }
+local CLIENT_KEYS = { "coins", "seeds", "gear", "bag", "stats", "stock", "daily", "tutorial", "boosts", "settings", "discovered", "quests" }
 
 function Sync.full(player: Player, data)
 	local snap = {}

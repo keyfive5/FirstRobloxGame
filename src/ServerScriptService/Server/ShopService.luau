@@ -17,6 +17,9 @@ local Sync = require(script.Parent.Sync)
 
 local ShopService = {}
 
+local boughtEvent = Instance.new("BindableEvent")
+ShopService.Bought = boughtEvent.Event -- (player, kind, id)
+
 local function window(): number
 	return math.floor(os.time() / Config.RestockInterval)
 end
@@ -103,6 +106,7 @@ local function buy(player: Player, kind: string, id: string)
 		Economy.addGear(player, id, 1)
 	end
 	Sync.set(player, "stock", stock)
+	boughtEvent:Fire(player, kind, id)
 	return true
 end
 

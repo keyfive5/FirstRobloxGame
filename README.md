@@ -27,7 +27,7 @@ Plant magical seeds, harvest the gems they grow, sell them at the Gem Trader, an
 - **Personal shop stock** that restocks every 5 minutes, so rare seeds really are rare.
 - **Gear**: watering cans, three kinds of sprinklers and a shovel.
 - **8 gardens per server.** Your garden keeps growing while you're offline.
-- **Retention**: tutorial, 7-day login streak, playtime gifts, promo codes, a collection index, global leaderboards, a friend sell bonus and invite rewards.
+- **Retention**: tutorial, **daily quests** (3 a day plus a bonus), 7-day login streak, playtime gifts, promo codes, a collection index, global leaderboards, a friend sell bonus and invite rewards.
 - **Look**: faceted CSG gems, procedural plants, an island built from terrain, gnome shopkeepers, and quiet licensed music (APM library).
 
 ## Monetization
@@ -44,12 +44,24 @@ Plant magical seeds, harvest the gems they grow, sell them at the Gem Trader, an
 
 Receipts are idempotent: every purchase ID is written to the player's save before Roblox is told it was granted. Product IDs live in [`src/ReplicatedStorage/Shared/Products.luau`](src/ReplicatedStorage/Shared/Products.luau).
 
-## Owner checklist (things only the account owner can do)
+## Promo videos
 
-1. **ID verification and 2-step verification**: [Publishing permissions](https://create.roblox.com/settings/eligibility/publishing-permissions). Until both are done, Roblox only shows the game to **players 16+ and trusted friends**, and most Roblox players are younger. Both are also required for ad earnings.
-2. **Promote it.** New games get their first players from [Roblox Ads](https://create.roblox.com/dashboard/advertising) (sponsored experiences) and short clips on TikTok, YouTube Shorts and Reels. Good clips to film: a Meteor Shower hitting a garden, a Rainbow or Celestial gem being harvested, a Diamond Tree loaded with gems.
-3. **Run live events.** In-game chat commands work for the game owner (see below). For example, `/weather meteor_shower` or `/sellboost 50 15` during a livestream.
-4. **Ship updates.** New seeds, codes and weather keep players coming back. Each one is a small change (see below).
+Recorded from real gameplay and edited with [`tools/make_promo.py`](tools/make_promo.py):
+
+- [`marketing/video/promo_vertical.mp4`](marketing/video/promo_vertical.mp4): 25 s, 1080×1920, for TikTok, YouTube Shorts and Instagram Reels
+- [`marketing/video/promo_landscape.mp4`](marketing/video/promo_landscape.mp4): 25 s, 1920×1080, for YouTube and the Roblox game page (`promo_landscape_web.mp4` is a smaller copy)
+
+The videos are silent on purpose. Add a trending sound inside TikTok or Shorts when posting, which helps reach. The in-game music is licensed for Roblox only.
+
+## Owner checklist
+
+- [x] ID verification and 2-step verification (account reach is now **All ages**)
+- [ ] **Reach 250 "highly engaged" 16+ players within 60 days.** Until then Roblox keeps the game in its 16+ trial phase. After that it opens to all ages, including younger players on Kids and Select accounts. Progress shows under Creator Hub → Audience → Reach.
+- [ ] **Post the promo videos** on TikTok, YouTube Shorts and Reels. Post one per day with different captions, for example: "this Roblox garden grows GEMS 💎", "lightning hit my garden ⚡ x30", "I got a x100 aurora gem".
+- [ ] **Upload the trailer** to the game page: Creator Hub → Places → Videos → Upload Video → `marketing/video/promo_landscape_web.mp4`.
+- [ ] **Optional paid boosts**: [Roblox Ads](https://create.roblox.com/dashboard/advertising) sponsored campaigns, or the refundable 1,000-Robux publishing fee (Audience → Reach).
+- [ ] Rewarded and immersive ads start paying automatically at 2,000 monthly players.
+- [ ] Ship updates (new seed, new code, a weekend event). Players come back for new content.
 
 ## Admin commands (owner only)
 
@@ -57,6 +69,8 @@ Receipts are idempotent: every purchase ID is written to the player's save befor
 /coins 1000            /seed ruby 5            /gear sprinkler 2
 /weather aurora        /restock                /growall
 /announce text...      /sellboost 50 10        (percent, minutes)
+/setweather aurora     /setweather clear       (instant switch)
+/strike meteor_shower  /strike thunderstorm    (hits a random garden now)
 ```
 
 ## Making changes
